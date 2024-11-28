@@ -1,0 +1,49 @@
+services:
+  # Frontend Service (React)
+  frontend:
+    image: alifa666/lamp-stack:frontend-22  # Replace with your actual image or Dockerfile path for the React app
+    container_name: frontend
+    ports:
+      - "3000:3000"  # Expose frontend on port 3000
+    environment:
+      - REACT_APP_API_HOST=http://192.168.20.52:9000  # Connect to backend service (using container name as hostname)
+    depends_on:
+      - backend  # Ensure the backend service is up before starting the frontend
+
+  # Backend Service (Laravel, Node.js, etc.)
+  backend:
+  #build: ./backend
+    image: alifa666/lamp-stack:backend-22  # Replace with your actual backend image
+    container_name: backend
+    ports:
+      - "9000:9000"  # Expose backend on port 9000
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://frontend:3000
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql-db  # Connect to MySQL service using container name
+      - DB_PORT=3306
+      - DB_DATABASE=expense_manager
+      - DB_USERNAME=expense_user
+      - DB_PASSWORD=expense_pass
+    depends_on:
+      - mysql-db  # Ensure MySQL is up before starting the backend
+
+  # MySQL Database Service
+  mysql-db:
+    image: mysql:5.7  # Using official MySQL image
+    container_name: mysql-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=expense_manager
+      - MYSQL_USER=expense_usera
+      - MYSQL_PASSWORD=expense_pass
+    volumes:
+      - mysql_data:/var/lib/mysql  # Persist MySQL data
+    ports:
+      - "3306:3306"  # Expose MySQL on port 3306 for external access (optional, only for debugging)
+      
+# Define volumes to persist MySQL data
+volumes:
+  mysql_data:
